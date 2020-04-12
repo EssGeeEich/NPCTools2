@@ -70,6 +70,7 @@ local function RestoreRelationships(src,tgt)
 end
 
 net.Receive("npctool_relman_add",function(len,pl)
+	if not (IsValid(pl) and pl:IsAdmin()) then return end
 	local src = net.ReadString()
 	local tgt = net.ReadString()
 	local disp = net.ReadUInt(3)
@@ -80,6 +81,7 @@ net.Receive("npctool_relman_add",function(len,pl)
 end)
 
 net.Receive("npctool_relman_rem",function(len,pl)
+	if not (IsValid(pl) and pl:IsAdmin()) then return end
 	local src = net.ReadString()
 	local tgt = net.ReadString()
 	if(tRels[src]) then
@@ -102,6 +104,7 @@ local function ClearRelationships(pl)
 end
 
 net.Receive("npctool_relman_up",function(len,pl)
+	if not (IsValid(pl) and pl:IsAdmin()) then return end
 	ClearRelationships(pl)
 	local numRels = net.ReadUInt(12)
 	enabled = pl:GetInfoNum("npctool_relman_enabled",1) != 0
@@ -119,6 +122,7 @@ net.Receive("npctool_relman_up",function(len,pl)
 end)
 
 net.Receive("npctool_relman_en",function(len,pl)
+	if not (IsValid(pl) and pl:IsAdmin()) then return end
 	enabled = net.ReadUInt(1) == 1
 	if(!enabled) then
 		for src,rels in pairs(tRels) do
@@ -136,5 +140,6 @@ net.Receive("npctool_relman_en",function(len,pl)
 end)
 
 net.Receive("npctool_relman_clr",function(len,pl)
+	if not (IsValid(pl) and pl:IsAdmin()) then return end
 	ClearRelationships(pl)
 end)
