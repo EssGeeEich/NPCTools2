@@ -1,1 +1,1 @@
-include("autorun/client/shared/shared.lua")
+include("autorun/shared/shared.lua")
