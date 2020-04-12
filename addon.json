@@ -4,6 +4,8 @@
 	"tags" : ["fun", "scenic"],
 	"ignore" :
 	[
-		".git*"
+		".git*",
+		"LICENSE",
+		"*.gma"
 	]
 }
