@@ -1,0 +1,9 @@
+{
+	"title": "NPC Tools 2",
+	"type" : "tool",
+	"tags" : ["fun", "scenic"],
+	"ignore" :
+	[
+		".git*"
+	]
+}
