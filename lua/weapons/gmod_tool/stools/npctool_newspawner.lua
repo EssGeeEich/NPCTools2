@@ -220,7 +220,7 @@ function TOOL.BuildCPanel(panel)
 	---- SavePresetButton
 	ToolData.SavePresetButton.DoClick = function()
 		CreateSaveDialog("NPC Spawner Settings", function(name)
-			if string.Right(name,4) != ".txt" then
+			if string.Right(name,4) ~= ".txt" then
 				name = name .. ".txt"
 			end
 			local data = {}
@@ -720,7 +720,7 @@ local function RequestSpawn(keyValues, relationships, spawnPos, ply, startEnt)
 	NPCSpawner:SetNPCClass(NPCClass)
 	NPCSpawner:SetNPCData(NPCData)
 	NPCSpawner:SetNPCBurrowed(ToolData.server.conVars.startburrowed)
-	NPCSpawner:SetNPCKeyValues(ToolData.server.keyValues)
+	NPCSpawner:SetNPCKeyValues(ToolData.server.data.keyValues)
 	
 	if ToolData.server.conVars.equipment ~= "" then
 		NPCSpawner:SetNPCEquipment(ToolData.server.conVars.equipment)

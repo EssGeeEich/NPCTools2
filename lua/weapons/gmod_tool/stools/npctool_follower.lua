@@ -25,9 +25,9 @@ if(CLIENT) then
 	local tbEntsSelected = {}
 	net.Receive("npctool_follower_select",function(len)
 		local ent = net.ReadEntity()
-		if(!ent:IsValid()) then return end
+		if(not ent:IsValid()) then return end
 		local bSelected = net.ReadUInt(1) == 1
-		if(!bSelected) then
+		if(not bSelected) then
 			notification.AddLegacy(language.GetPhrase("#" .. ent:GetClass()) .. " deselected.",0,8)
 			ent:StopParticles()
 			for _,entTgt in ipairs(tbEntsSelected) do
@@ -52,7 +52,7 @@ if(CLIENT) then
 			return
 		end
 		local ent = net.ReadEntity()
-		if(!ent:IsValid()) then return end
+		if(not ent:IsValid()) then return end
 		if(num == 1) then notification.AddLegacy("1 NPC is now following " .. language.GetPhrase("#" .. ent:GetClass()) .. ".",0,8)
 		else notification.AddLegacy(num .. " NPCs are now following " .. language.GetPhrase("#" .. ent:GetClass()) .. ".",0,8) end
 	end)
@@ -83,26 +83,26 @@ end
 
 function TOOL:StartFollowing(src,tgt)
 	self:StopFollowing(src)
-	self.m_tbDisp = self.m_tbDisp || {}
+	self.m_tbDisp = self.m_tbDisp or {}
 	local hk = "npctool_follower" .. src:EntIndex() .. tgt:EntIndex()
-	self.m_tbDisp[src] = self.m_tbDisp[src] || {}
+	self.m_tbDisp[src] = self.m_tbDisp[src] or {}
 	self.m_tbDisp[src][tgt] = src:Disposition(tgt)
 	if(tgt:IsNPC()) then
-		self.m_tbDisp[tgt] = self.m_tbDisp[tgt] || {}
+		self.m_tbDisp[tgt] = self.m_tbDisp[tgt] or {}
 		self.m_tbDisp[tgt][src] = tgt:Disposition(src)
 		tgt:AddEntityRelationship(src,D_LI,100)
 	end
-	if(tgt:IsNPC() || tgt:IsPlayer()) then src:AddEntityRelationship(tgt,D_LI,100) end
+	if(tgt:IsNPC() or tgt:IsPlayer()) then src:AddEntityRelationship(tgt,D_LI,100) end
 	if(src.bScripted) then src.fFollowDistance = 200; src:SetBehavior(1,tgt); return end
 	local nextUpdate = CurTime()
 	local last
 	hook.Add("Think",hk,function()
-		if(!src:IsValid() || !tgt:IsValid()) then hook.Remove("Think",hk)
+		if not IsValid(src) or not IsValid(tgt) then hook.Remove("Think",hk)
 		elseif(CurTime() >= nextUpdate) then
 			nextUpdate = CurTime() +0.5
 			local posSrc = src:GetPos()
 			local posTgt = tgt:GetPos()
-			if(!last || !src:IsCurrentSchedule(SCHED_FORCED_GO_RUN) || posTgt:Distance(last) > 200) then
+			if(not last or not src:IsCurrentSchedule(SCHED_FORCED_GO_RUN) or posTgt:Distance(last) > 200) then
 				last = posTgt
 				local d = math.max(posSrc:Distance(posTgt) -(src:OBBMaxs().x +tgt:OBBMaxs().x),0)
 				local schd = SCHED_FORCED_GO_RUN
@@ -116,15 +116,15 @@ function TOOL:StartFollowing(src,tgt)
 end
 
 function TOOL:StopFollowing(src)
-	if(!self.m_tbDisp) then return end
-	if(!self.m_tbDisp[src]) then return end
+	if(not self.m_tbDisp) then return end
+	if(not self.m_tbDisp[src]) then return end
 	for tgt,disp in pairs(self.m_tbDisp[src]) do
 		if(tgt:IsValid()) then
 			hook.Remove("Think","npctool_follower" .. src:EntIndex() .. tgt:EntIndex())
 			src:AddEntityRelationship(tgt,disp,100)
 			self.m_tbDisp[src][tgt] = nil
-			if(!tgt:IsPlayer()) then
-				if(self.m_tbDisp[tgt] && self.m_tbDisp[tgt][src]) then
+			if(not tgt:IsPlayer()) then
+				if(self.m_tbDisp[tgt] and self.m_tbDisp[tgt][src]) then
 					tgt:AddEntityRelationship(src,self.m_tbDisp[tgt][src],100)
 					self.m_tbDisp[tgt][src] = nil
 				else tgt:AddEntityRelationship(src,disp,100) end
@@ -141,8 +141,8 @@ end
 
 function TOOL:LeftClick(tr)
 	if(CLIENT) then return true end
-	if(tr.Entity:IsValid() && tr.Entity:IsNPC()) then
-		self.m_tbNPCs = self.m_tbNPCs || {}
+	if(tr.Entity:IsValid() and tr.Entity:IsNPC()) then
+		self.m_tbNPCs = self.m_tbNPCs or {}
 		local bExists
 		for _,ent in ipairs(self.m_tbNPCs) do
 			if(ent == tr.Entity) then
@@ -151,12 +151,12 @@ function TOOL:LeftClick(tr)
 				break
 			end
 		end
-		if(!bExists) then
+		if(not bExists) then
 			table.insert(self.m_tbNPCs,tr.Entity)
 		end
 		net.Start("npctool_follower_select")
 			net.WriteEntity(tr.Entity)
-			net.WriteUInt(bExists && 0 || 1,1)
+			net.WriteUInt(bExists and 0 or 1,1)
 		net.Send(self:GetOwner())
 		return true
 	end
@@ -164,8 +164,8 @@ function TOOL:LeftClick(tr)
 end
 
 function TOOL:RightClick(tr)
-	if(!self.m_tbNPCs) then return false end
-	if(!tr.Entity:IsValid()) then return false end
+	if not self.m_tbNPCs then return false end
+	if not IsValid(tr.Entity) then return false end
 	if(CLIENT) then return true end
 	local num = 0
 	for _,ent in ipairs(self.m_tbNPCs) do
@@ -186,7 +186,7 @@ end
 
 function TOOL:Reload()
 	if(CLIENT) then return end
-	if(!self.m_tbNPCs) then return end
+	if(not self.m_tbNPCs) then return end
 	local pl = self:GetOwner()
 	local num = 0
 	for _,ent in ipairs(self.m_tbNPCs) do

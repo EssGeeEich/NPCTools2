@@ -10,7 +10,7 @@ if(CLIENT) then
 		left:SetMinMax(numMin,numMax)
 		left:SetDark(true)
 		
-		if(numDecimals != nil) then left:SetDecimals(numDecimals) end
+		if(numDecimals ~= nil) then left:SetDecimals(numDecimals) end
 		left:SetConVar(strConVar)
 		left:SizeToContents()
 		self:AddItem(left,nil)
@@ -38,10 +38,10 @@ if(CLIENT) then
 	local addon = 118115179
 	local function ShowWarning()
 		bWarned = true
-		if(!game.SinglePlayer()) then return end
-		if(!steamworks.IsSubscribed(addon) || !steamworks.ShouldMountAddon(addon)) then return end
+		if(not game.SinglePlayer()) then return end
+		if(not steamworks.IsSubscribed(addon) or not steamworks.ShouldMountAddon(addon)) then return end
 		steamworks.FileInfo(addon,function(r)
-			r = r || {title = "Error"}
+			r = r or {title = "Error"}
 			local w = 500
 			local pnl = vgui.Create("DFrame")
 			pnl:SetTitle("NPC Proficiency - Warning")
@@ -71,22 +71,22 @@ if(CLIENT) then
 		end)
 	end
 	function TOOL.BuildCPanel(pnl)
-		if(!bWarned) then ShowWarning() end
+		if(not bWarned) then ShowWarning() end
 		pnl:AddControl("Header",{Text = "Viewcam",Description = [[Left-Click on a NPC to change his proficiency.
 		Right-Click to change the proficiency of all active NPCs of this class.
 		]]})
 		local pSl = NumSlider(pnl,"Proficiency:",nil,1,5,0)
-		local prof = values[GetConVarNumber("npctool_proficiency_value")] || "Poor"
+		local prof = values[GetConVarNumber("npctool_proficiency_value")] or "Poor"
 		pSl.Wang:SetText(prof)
 		local i
 		for _,val in ipairs(values) do if(val == prof) then i = _ +1; break end end
 		if(i) then pSl.Slider:SetSlideX((i -1) /4) end
 		pSl.TranslateSliderValues = function(...)
 			local x,y = select(2,...)
-			local num = tonumber(x *4 +1) || 0
+			local num = tonumber(x *4 +1) or 0
 			num = math.Round(num)
 			local val = math.Clamp(num,1,5)
-			pSl.Wang:SetText(values[val -1] || "Poor")
+			pSl.Wang:SetText(values[val -1] or "Poor")
 			RunConsoleCommand("npctool_proficiency_value",val -1)
 			return ((num -1) /4),y
 		end
@@ -94,20 +94,20 @@ if(CLIENT) then
 	local tbProficiency
 	net.Receive("npctool_proficiency_update",function(len)
 		local ent = net.ReadEntity()
-		if(!ent:IsValid()) then return end
+		if(not ent:IsValid()) then return end
 		local prof = net.ReadUInt(3)
 		local bType = net.ReadUInt(1) == 1
 		local text
-		if(!bType) then
+		if(not bType) then
 			tbProficiency[ent] = prof
-			text = "Set proficiency of " .. language.GetPhrase("#" .. ent:GetClass()) .. " to " .. string.lower(values[prof] || "poor") .. "."
+			text = "Set proficiency of " .. language.GetPhrase("#" .. ent:GetClass()) .. " to " .. string.lower(values[prof] or "poor") .. "."
 		else
 			local num = 0
 			for _,ent in ipairs(ents.FindByClass(ent:GetClass())) do
 				num = num +1
 				tbProficiency[ent] = prof
 			end
-			text = "Set proficiency of all NPCs of type '" .. language.GetPhrase("#" .. ent:GetClass()) .. "' (" .. num .. ") to " .. string.lower(values[prof] || "poor") .. "."
+			text = "Set proficiency of all NPCs of type '" .. language.GetPhrase("#" .. ent:GetClass()) .. "' (" .. num .. ") to " .. string.lower(values[prof] or "poor") .. "."
 		end
 		notification.AddLegacy(text,0,8)
 	end)
@@ -117,7 +117,7 @@ if(CLIENT) then
 	end)
 	net.Receive("npctool_proficiency_holster",function(len)
 		local wep = LocalPlayer():GetActiveWeapon()
-		if(wep:IsValid() && wep:GetClass() == "gmod_tool" && wep:GetMode() == "npctool_proficiency") then // False alarm
+		if(wep:IsValid() and wep:GetClass() == "gmod_tool" and wep:GetMode() == "npctool_proficiency") then -- False alarm
 			return
 		end
 		tbProficiency = nil
@@ -125,9 +125,9 @@ if(CLIENT) then
 		hook.Remove("OnEntityCreated","npctool_proficiency_update")
 	end)
 	net.Receive("cl_npctool_proficiency_request_sng",function(len)
-		if(!tbProficiency) then return end
+		if(not tbProficiency) then return end
 		local ent = net.ReadEntity()
-		if(!ent:IsValid()) then return end
+		if(not ent:IsValid()) then return end
 		local prof = net.ReadUInt(3)
 		tbProficiency[ent] = prof
 	end)
@@ -140,7 +140,7 @@ if(CLIENT) then
 			if(ent:IsValid()) then tbProficiency[ent] = prof end
 		end
 		hook.Add("OnEntityCreated","npctool_proficiency_update",function(ent)
-			if(ent:IsValid() && ent:IsNPC()) then
+			if(ent:IsValid() and ent:IsNPC()) then
 				net.Start("sv_npctool_proficiency_request_sng")
 					net.WriteEntity(ent)
 				net.SendToServer()
@@ -149,7 +149,7 @@ if(CLIENT) then
 		hook.Add("RenderScreenspaceEffects","npctool_proficiency_draw",function()
 			cam.Start3D(EyePos(),EyeAngles())
 			for ent,prof in pairs(tbProficiency) do
-				if(!ent:IsValid()) then tbProficiency[ent] = nil
+				if(not ent:IsValid()) then tbProficiency[ent] = nil
 				else
 					local ang = LocalPlayer():EyeAngles()
 					ang:RotateAroundAxis(ang:Forward(),90)
@@ -160,7 +160,7 @@ if(CLIENT) then
 					cam.End3D2D()
 					pos.z = pos.z -6
 					cam.Start3D2D(pos,Angle(0,ang.y,90),0.5)
-						draw.DrawText(values[prof] || "Poor","default",2,2,colText,TEXT_ALIGN_CENTER)
+						draw.DrawText(values[prof] or "Poor","default",2,2,colText,TEXT_ALIGN_CENTER)
 					cam.End3D2D()
 				end
 			end
@@ -177,7 +177,7 @@ else
 	util.AddNetworkString("cl_npctool_proficiency_request_sng")
 	net.Receive("sv_npctool_proficiency_request_sng",function(len,pl)
 		local ent = net.ReadEntity()
-		if(!ent:IsValid() || !ent:IsNPC()) then return end
+		if(not ent:IsValid() or not ent:IsNPC()) then return end
 		local prof = ent:GetCurrentWeaponProficiency()
 		net.Start("cl_npctool_proficiency_request_sng")
 			net.WriteEntity(ent)
@@ -209,7 +209,7 @@ end
 
 function TOOL:LeftClick(tr)
 	if(CLIENT) then return true end
-	if(tr.Entity:IsValid() && tr.Entity:IsNPC()) then
+	if(tr.Entity:IsValid() and tr.Entity:IsNPC()) then
 		local prof = self:GetClientNumber("value")
 		tr.Entity:SetCurrentWeaponProficiency(prof)
 		net.Start("npctool_proficiency_update")
@@ -224,7 +224,7 @@ end
 
 function TOOL:RightClick(tr)
 	if(CLIENT) then return true end
-	if(tr.Entity:IsValid() && tr.Entity:IsNPC()) then
+	if(tr.Entity:IsValid() and tr.Entity:IsNPC()) then
 		local prof = self:GetClientNumber("value")
 		for _,ent in ipairs(ents.FindByClass(tr.Entity:GetClass())) do
 			ent:SetCurrentWeaponProficiency(prof)

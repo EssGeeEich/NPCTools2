@@ -79,8 +79,8 @@ function ENT:OnRemove()
 end
 
 function ENT:Think()
-	if IsValid(self.entOwner) && #self.entOwner:GetWeapons() > 0 then self.entOwner:StripWeapons() end
-	if !IsValid(self.entTarget) || self.entTarget:Health() <= 0 || !IsValid(self.entOwner) || !self.entOwner:Alive() || self.entOwner:KeyDown(IN_USE) then
+	if IsValid(self.entOwner) and #self.entOwner:GetWeapons() > 0 then self.entOwner:StripWeapons() end
+	if not IsValid(self.entTarget) or self.entTarget:Health() <= 0 or (not IsValid(self.entOwner)) or (not self.entOwner:Alive()) or self.entOwner:KeyDown(IN_USE) then
 		self:Remove()
 		return
 	end

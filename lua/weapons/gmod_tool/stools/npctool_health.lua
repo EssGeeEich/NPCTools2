@@ -22,14 +22,14 @@ if(CLIENT) then
 	
 	net.Receive("npctool_health_set",function(len)
 		local ent = net.ReadEntity()
-		if(!ent:IsValid()) then return end
+		if(not IsValid(ent)) then return end
 		local cvHealth = GetConVar("npctool_health_health")
 		local cvInvincible = GetConVar("npctool_health_invincible")
-		local bWasInvincible = net.ReadUInt(1) != 0
+		local bWasInvincible = net.ReadUInt(1) ~= 0
 		local hp = cvHealth:GetInt()
 		local bInvincible = cvInvincible:GetBool()
 		local name = language.GetPhrase("#" .. ent:GetClass())
-		if(bInvincible) then if(!bWasInvincible) then notification.AddLegacy(name .. " is now invincible.",0,8) end
+		if(bInvincible) then if(not bWasInvincible) then notification.AddLegacy(name .. " is now invincible.",0,8) end
 		else
 			if(bWasInvincible) then notification.AddLegacy(name .. " is not invincible anymore.",0,8) end
 			notification.AddLegacy("Set health of " .. name .. " to " .. hp,0,8)
@@ -41,28 +41,28 @@ else
 	util.AddNetworkString("npctool_health_set")
 	local tbEntsInvincible = {}
 	function TOOL:LeftClick(tr)
-		if(tr.Entity:IsValid() && tr.Entity:IsNPC()) then
+		if(tr.Entity:IsValid() and tr.Entity:IsNPC()) then
 			tr.Entity:SetHealth(self:GetClientNumber("health"))
 			net.Start("npctool_health_set")
 			net.WriteEntity(tr.Entity)
-				if(self:GetClientNumber("invincible") != 0) then
+				if(self:GetClientNumber("invincible") ~= 0) then
 					if(tr.Entity.bScripted) then
 						local bInvincible = tr.Entity:IsInvincible()
-						if(!bInvincible) then tr.Entity:SetInvincible(true) end
-						net.WriteUInt(bInvincible && 1 || 0,1)
-					elseif(!table.HasValue(tbEntsInvincible,tr.Entity)) then
+						if(not bInvincible) then tr.Entity:SetInvincible(true) end
+						net.WriteUInt(bInvincible and 1 or 0,1)
+					elseif(not table.HasValue(tbEntsInvincible,tr.Entity)) then
 						table.insert(tbEntsInvincible,tr.Entity)
 						local idx = tr.Entity:EntIndex()
 						local hk = "npctool_health_invincible" .. idx
 						hook.Add("EntityTakeDamage",hk,function(npc,dmginfo)
-							if(!tr.Entity:IsValid()) then hook.Remove("EntityTakeDamage",hk)
+							if(not tr.Entity:IsValid()) then hook.Remove("EntityTakeDamage",hk)
 							elseif(npc == tr.Entity) then dmginfo:SetDamage(0) end
 						end)
 						net.WriteUInt(0,1)
 					else net.WriteUInt(1,1) end
 				else
 					if(tr.Entity.bScripted) then
-						net.WriteUInt(tr.Entity:IsInvincible() && 1 || 0,1)
+						net.WriteUInt(tr.Entity:IsInvincible() and 1 or 0,1)
 						tr.Entity:SetInvincible(false)
 					elseif(table.HasValue(tbEntsInvincible,tr.Entity)) then
 						net.WriteUInt(1,1)

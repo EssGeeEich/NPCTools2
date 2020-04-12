@@ -21,7 +21,7 @@ if(CLIENT) then
 		left:SetMinMax(numMin,numMax)
 		left:SetDark(true)
 		
-		if(numDecimals != nil) then left:SetDecimals(numDecimals) end
+		if(numDecimals ~= nil) then left:SetDecimals(numDecimals) end
 		left:SetConVar(strConVar)
 		left:SizeToContents()
 		self:AddItem(left,nil)
@@ -33,7 +33,7 @@ if(CLIENT) then
 		["squad"] = "",
 		["spawnflags"] = "0",
 		["equipment"] = "",
-		//["soundtrack"] = "",
+		-- ["soundtrack"] = "",
 		["delay"] = "4",
 		["max"] = "4",
 		["total"] = "0",
@@ -59,12 +59,12 @@ if(CLIENT) then
 		local tbEnts = ents.GetAll()
 		util.Effect("effect_cube",EffectData())
 		local e = ents.GetAll()[#tbEnts +1]
-		if(!e) then return end
+		if(not e) then return end
 		e:SetOrigin(pos)
 		return e
 	end
 	local function CreatePatrolPoint(pos)
-		if(GetConVarNumber("npctool_spawner_patrolshow") != 0) then
+		if(GetConVarNumber("npctool_spawner_patrolshow") ~= 0) then
 			local e = CreatePatrolPointEffect(pos)
 			if(e) then e:SetID(table.insert(tbPPEffects,e)) end
 		end
@@ -95,7 +95,7 @@ if(CLIENT) then
 		hook.Remove("RenderScreenspaceEffects","npctool_spawner_renderppoints")
 		for _,ent in ipairs(tbPPEffects) do ent.m_bRemove = true end
 		table.Empty(tbPPEffects)
-		if(!b) then return end
+		if not b then return end
 		for _,pos in ipairs(tbPatrolPoints) do
 			tbPPEffects[_] = CreatePatrolPointEffect(pos)
 			tbPPEffects[_]:SetID(_)
@@ -114,7 +114,7 @@ if(CLIENT) then
 				local pPrev = tbPPEffects[i -1]
 				render.DrawBeam(pPrev:GetPos() +offset,p:GetPos() +offset,5,0,0,col)
 			end
-			if(num > 2 && cv:GetInt() == 3) then
+			if(num > 2 and cv:GetInt() == 3) then
 				local last = tbPPEffects[num]
 				local first = tbPPEffects[1]
 				render.DrawBeam(last:GetPos() +offset,first:GetPos() +offset,5,0,0,col)
@@ -136,10 +136,10 @@ if(CLIENT) then
 		CreatePatrolPoint(tr.HitPos)
 	end)
 	local function RemovePatrolPoint(ID)
-		if(!tbPatrolPoints[ID]) then return end
+		if(not tbPatrolPoints[ID]) then return end
 		table.remove(tbPatrolPoints,ID)
 		local ent = tbPPEffects[ID]
-		if(ent && ent:IsValid()) then
+		if(ent and ent:IsValid()) then
 			ent.m_bRemove = true
 			table.remove(tbPPEffects,ID)
 		end
@@ -166,7 +166,7 @@ if(CLIENT) then
 		local w, h = 220,110
 		local x,y = ScrW() *0.5 -w *0.5,ScrH() *0.5 -h *0.5
 		local p = vgui.Create("DFrame")
-		p:SetSize(w,h) 
+		p:SetSize(w,h)
 		p:SetPos(x,y)
 		p:MakePopup()
 		p:ShowCloseButton(true)
@@ -186,7 +186,7 @@ if(CLIENT) then
 		bSave:SetPos(20,70)
 		bSave.DoClick = function(bSave)
 			p:Close()
-			if(teName:GetValue() != "") then fcSave(teName:GetValue()) end
+			if(teName:GetValue() ~= "") then fcSave(teName:GetValue()) end
 		end
 		
 		local bCancel = vgui.Create("DButton", p)
@@ -230,14 +230,14 @@ if(CLIENT) then
 					MainMenu(controlpanel.Get("npctool_spawner"))
 					timer.Simple(0,function()
 						for cv,def in pairs(tbCvars) do
-							if(cv != "class" && cv != "proficiency") then RunConsoleCommand("npctool_spawner_" .. cv,def) end
+							if(cv ~= "class" and cv ~= "proficiency") then RunConsoleCommand("npctool_spawner_" .. cv,def) end
 						end
 					end)
 				end)
 				return
 			end
 			local content = file.Read("npcspawner/" .. val .. ".txt","DATA")
-			if(!content) then return end
+			if not content then return end
 			local data = util.JSONToTable(content)
 			if(data.keyvalues) then tbKeyValues = data.keyvalues end
 			if(data.relationships) then tbRelationships = data.relationships end
@@ -247,7 +247,7 @@ if(CLIENT) then
 				end
 			end
 			if(data.cvars) then
-				if(data.cvars.class) then RunConsoleCommand("npctool_spawner_class",data.cvars.class); data.cvars.class = nil end // Need to set the class before reloading the menu
+				if(data.cvars.class) then RunConsoleCommand("npctool_spawner_class",data.cvars.class); data.cvars.class = nil end -- Need to set the class before reloading the menu
 				if(data.cvars.proficiency) then RunConsoleCommand("npctool_spawner_proficiency",data.cvars.proficiency); data.cvars.proficiency = nil end
 				if(data.cvars.delay) then RunConsoleCommand("npctool_spawner_delay",data.cvars.delay); data.cvars.delay = nil end
 				if(data.cvars.max) then RunConsoleCommand("npctool_spawner_max",data.cvars.max); data.cvars.max = nil end
@@ -258,7 +258,7 @@ if(CLIENT) then
 				if(data.cvars) then
 					timer.Simple(0,function()
 						for cv,val in pairs(data.cvars) do
-							if(cv != "class" && cv != "proficiency") then RunConsoleCommand("npctool_spawner_" .. cv,val) end
+							if(cv ~= "class" and cv ~= "proficiency") then RunConsoleCommand("npctool_spawner_" .. cv,val) end
 						end
 					end)
 				end
@@ -274,7 +274,7 @@ if(CLIENT) then
 		b:SizeToContents()
 		b.OnMousePressed = function(b)
 			CreateSaveDialog("NPC Spawner Settings",function(name)
-				if(string.Right(name,4) != ".txt") then name = name .. ".txt" end
+				if(string.Right(name,4) ~= ".txt") then name = name .. ".txt" end
 				local data = {}
 				data.cvars = {}
 				for cv in pairs(tbCvars) do
@@ -295,8 +295,8 @@ if(CLIENT) then
 		pnl:AddControl("ListBox",{Label = "NPC",MenuButton = 0,Height = 150,Options = options})
 		pnl:AddControl("TextBox",{Label = "Squadname",MaxLength = 20,WaitForEnter = false,Type = "Float",Command = "npctool_spawner_squad"})
 		pnl:AddControl("TextBox",{Label = "Spawnflags",MaxLength = 20,WaitForEnter = false,Type = "Integer",Command = "npctool_spawner_spawnflags"})
-		//pnl:AddControl("TextBox",{Label = "Soundtrack",MaxLength = 60,WaitForEnter = false,Type = "String",Command = "npctool_spawner_soundtrack"})
-		//pnl:AddControl("Label",{Text = "                                  (This track will play as long as                                   this spawner is active. Only one soundtrack can                                   play at a time.)"})
+		-- pnl:AddControl("TextBox",{Label = "Soundtrack",MaxLength = 60,WaitForEnter = false,Type = "String",Command = "npctool_spawner_soundtrack"})
+		-- pnl:AddControl("Label",{Text = "                                  (This track will play as long as                                   this spawner is active. Only one soundtrack can                                   play at a time.)"})
 
 		local ComboBox = pnl:ComboBox("Equipment","npctool_spawner_equipment")
 		ComboBox:SetSortItems(false)
@@ -317,17 +317,17 @@ if(CLIENT) then
 			[WEAPON_PROFICIENCY_DEFAULT] = "Default"
 		}
 		local pSl = NumSlider(pnl,"Weapon Proficiency:",nil,1,7,0)
-		local prof = values[GetConVarNumber("npctool_spawner_proficiency")] || "Poor"
+		local prof = values[GetConVarNumber("npctool_spawner_proficiency")] or "Poor"
 		pSl.Wang:SetText(prof)
 		local i
 		for _,val in ipairs(values) do if(val == prof) then i = _ +1; break end end
 		if(i) then pSl.Slider:SetSlideX((i -1) /6) end
 		pSl.TranslateSliderValues = function(...)
 			local x,y = select(2,...)
-			local num = tonumber(x *6 +1) || 0
+			local num = tonumber(x *6 +1) or 0
 			num = math.Round(num)
 			local val = math.Clamp(num,1,7)
-			pSl.Wang:SetText(values[val -1] || "Poor")
+			pSl.Wang:SetText(values[val -1] or "Poor")
 			RunConsoleCommand("npctool_spawner_proficiency",val -1)
 			return ((num -1) /6),y
 		end
@@ -343,7 +343,7 @@ if(CLIENT) then
 		pnl:AddControl("CheckBox",{Label = "Start burrowed (Antlions and headcrabs)",Command = "npctool_spawner_startburrowed"})
 		pnl:AddControl("CheckBox",{Label = "Remove spawned NPCs on removal",Command = "npctool_spawner_deleteonremove"})
 		
-		if(GetConVarNumber("npctool_spawner_patrolshow") != 0) then ShowPatrolPoints(true) end
+		if(GetConVarNumber("npctool_spawner_patrolshow") ~= 0) then ShowPatrolPoints(true) end
 		pnl:AddControl("Label",{Label = "",Text = ""})
 		pnl:AddControl("Label",{Label = "Patrol",Text = "Patrol"})
 		pnl:AddControl("CheckBox",{Label = "Show patrol points",Command = "npctool_spawner_patrolshow"})
@@ -439,8 +439,8 @@ if(CLIENT) then
 	concommand.Add("npctool_spawner_relationships_add",function(pl,cmd,args)
 		local tgt = args[1]
 		local disp = args[2]
-		if(tgt && disp) then
-			tbRelationships[tgt] = tonumber(disp) || D_NU
+		if(tgt and disp) then
+			tbRelationships[tgt] = tonumber(disp) or D_NU
 			MainMenu(controlpanel.Get("npctool_spawner"))
 			return
 		end
@@ -505,7 +505,7 @@ if(CLIENT) then
 		b:SetPos(30,100)
 		b.DoClick = function(b)
 			p:Close()
-			if(class && disp) then
+			if(class and disp) then
 				RunConsoleCommand("npctool_spawner_relationships_add",class,disp)
 			end
 		end
@@ -531,7 +531,7 @@ if(CLIENT) then
 	concommand.Add("npctool_spawner_keyvalues_add",function(pl,cmd,args)
 		local key = args[1]
 		local val = args[2]
-		if(key && val) then
+		if(key and val) then
 			tbKeyValues[key] = val
 			MainMenu(controlpanel.Get("npctool_spawner"))
 			return
@@ -576,7 +576,7 @@ if(CLIENT) then
 			p:Close()
 			local key = teKey:GetValue()
 			local val = teVal:GetValue()
-			if(key != "" && val != "") then
+			if(key ~= "" and val ~= "") then
 				RunConsoleCommand("npctool_spawner_keyvalues_add",key,val)
 			end
 		end
@@ -605,7 +605,7 @@ if(CLIENT) then
 			net.WriteString(GetConVarString("npctool_spawner_squad"))
 			net.WriteUInt(GetConVarNumber("npctool_spawner_spawnflags"),25)
 			net.WriteString(GetConVarString("npctool_spawner_equipment"))
-			//net.WriteString(GetConVarString("npctool_spawner_soundtrack"))
+			-- net.WriteString(GetConVarString("npctool_spawner_soundtrack"))
 			net.WriteUInt(GetConVarNumber("npctool_spawner_proficiency"),4)
 			net.WriteFloat(GetConVarNumber("npctool_spawner_delay"))
 			net.WriteUInt(GetConVarNumber("npctool_spawner_max"),6)
@@ -635,9 +635,9 @@ if(CLIENT) then
 				net.WriteUInt(disp,3)
 			end
 			
-			if RouteList and RouteList:GetSelected() != nil and RouteList:GetSelected() ~= "[No Path]" then
+			if RouteList and RouteList:GetSelected() ~= nil and RouteList:GetSelected() ~= "[No Path]" then
 				local data = "patrolroutes/route(-)"..game.GetMap().."(-)"..RouteList:GetSelected()..".txt"
-				if file.Exists(data, "DATA") and !file.IsDir(data, "DATA") then
+				if file.Exists(data, "DATA") and not file.IsDir(data, "DATA") then
 					local contents = string.Explode( "(_-_)", file.Read(data,"DATA"))
 					
 					local PatrolData = {pon.decode(contents[1]), pon.decode(contents[2])}
@@ -653,12 +653,12 @@ if(CLIENT) then
 		net.SendToServer()
 	end)
 	net.Receive("npctool_spawner_deploy",function(len)
-		if(GetConVarNumber("npctool_spawner_patrolshow") != 0) then ShowPatrolPoints(true) end
+		if(GetConVarNumber("npctool_spawner_patrolshow") ~= 0) then ShowPatrolPoints(true) end
 	end)
 	net.Receive("npctool_spawner_holster",function(len)
 		local wep = LocalPlayer():GetActiveWeapon()
-		if(wep:IsValid() && wep:GetClass() == "gmod_tool" && wep:GetMode() == "npctool_spawner") then // False alarm
-			if(GetConVarNumber("npctool_spawner_patrolshow") != 0) then ShowPatrolPoints(true) end
+		if(wep:IsValid() and wep:GetClass() == "gmod_tool" and wep:GetMode() == "npctool_spawner") then -- False alarm
+			if(GetConVarNumber("npctool_spawner_patrolshow") ~= 0) then ShowPatrolPoints(true) end
 			return
 		end
 		ShowPatrolPoints(false)
@@ -680,7 +680,7 @@ else
 		for _,undo in pairs(undo.GetTable()) do
 			for i = #undo,1,-1 do
 				local data = undo[i]
-				if(data.Name == "PatrolPoint" && data.Owner == pl) then
+				if(data.Name == "PatrolPoint" and data.Owner == pl) then
 					table.remove(undo,i)
 				end
 			end
@@ -701,13 +701,13 @@ else
 		local yaw = net.ReadFloat()
 		local type = net.ReadString()
 		local npcData = list.Get("NPC")[type]
-		if(!npcData) then ErrorNoHalt("Warning: Trying to use invalid NPC Type '" .. type .. "' for NPC Spawner! Ignoring..."); return end
+		if(not npcData) then ErrorNoHalt("Warning: Trying to use invalid NPC Type '" .. type .. "' for NPC Spawner! Ignoring..."); return end
 		local class = npcData.Class
-		if(!class) then ErrorNoHalt("Warning: NPC Type '" .. type .. "' does not have an assigned class for NPC Spawner! Ignoring..."); return end
+		if(not class) then ErrorNoHalt("Warning: NPC Type '" .. type .. "' does not have an assigned class for NPC Spawner! Ignoring..."); return end
 		local squad = net.ReadString()
 		local spawnflags = net.ReadUInt(25)
 		local equipment = net.ReadString()
-		//local soundtrack = net.ReadString()
+		-- local soundtrack = net.ReadString()
 		local proficiency = net.ReadUInt(4)
 		local delay = net.ReadFloat()
 		local max = net.ReadUInt(6)
@@ -750,7 +750,7 @@ else
 		ent:SetNPCData(npcData)
 		ent:SetNPCBurrowed(tobool(startburrowed))
 		ent:SetNPCKeyValues(tbKeyValues)
-		if(equipment != "") then ent:SetNPCEquipment(equipment) end
+		if(equipment ~= "") then ent:SetNPCEquipment(equipment) end
 		if(spawnflags > 0) then ent:SetNPCSpawnflags(spawnflags) end
 		ent:SetNPCProficiency(proficiency)
 		ent:SetEntityOwner(pl)
@@ -759,7 +759,7 @@ else
 		ent:SetSpawnDelay(delay)
 		ent:SetMaxNPCs(max)
 		ent:SetTotalNPCs(total)
-		//ent:SetSoundtrack(soundtrack)
+		-- ent:SetSoundtrack(soundtrack)
 		ent:SetStartOn(tobool(starton))
 		ent:SetPatrolWalk(tobool(patrolwalk))
 		ent:SetPatrolType(patroltype)
@@ -767,7 +767,7 @@ else
 		ent:SetStrictMovement(tobool(patrolstrict))
 		ent:SetDeleteOnRemove(tobool(deleteonremove))
 		ent:SetXP(xp or 10)
-		if(squad != "") then ent:SetSquad(squad) end
+		if(squad ~= "") then ent:SetSquad(squad) end
 		for _,p in ipairs(tbPatrolPoints) do
 			ent:AddPatrolPoint(p)
 		end

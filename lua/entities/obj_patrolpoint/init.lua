@@ -64,16 +64,16 @@ function ENT:Think()
 	local pos = self:GetPos()
 	for i = #self.m_tbNPCs,1,-1 do
 		local ent = self.m_tbNPCs[i]
-		if(!ent:IsValid() || ent:Health() <= 0) then table.remove(self.m_tbNPCs,i)
-		elseif((ent.GetState && ent:GetState() || ent:GetNPCState()) <= NPC_STATE_ALERT || self:GetStrictMovement()) then
+		if(not IsValid(ent) or ent:Health() <= 0) then table.remove(self.m_tbNPCs,i)
+		elseif((ent.GetState and ent:GetState() or ent:GetNPCState()) <= NPC_STATE_ALERT or self:GetStrictMovement()) then
 			local posEnt = ent:NearestPoint(pos +ent:OBBCenter())
 			local dist = pos:Distance(posEnt)
 			if(dist <= 120) then
 				local pPointNext = self.m_nextPoint
 				if(ent.m_bPatrolBack) then
-					if(!IsValid(self.m_lastPoint)) then ent.m_bPatrolBack = nil
+					if(not IsValid(self.m_lastPoint)) then ent.m_bPatrolBack = nil
 					else pPointNext = self.m_lastPoint end
-				elseif(self.m_lastPoint && !IsValid(pPointNext) && self.m_lastPoint:IsValid()) then
+				elseif(self.m_lastPoint and (not IsValid(pPointNext)) and IsValid(self.m_lastPoint)) then
 					ent.m_bPatrolBack = true
 					pPointNext = self.m_lastPoint
 				end

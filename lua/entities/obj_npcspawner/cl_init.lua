@@ -1,14 +1,14 @@
 include('shared.lua')
 
 function ENT:Initialize()
-	//net.Start("slv_npctools_spawner_reqtrack")
-	//	net.WriteEntity(self)
-	//net.SendToServer()
+	--net.Start("slv_npctools_spawner_reqtrack")
+	--	net.WriteEntity(self)
+	--net.SendToServer()
 end
 
 function ENT:Draw()
 end
-/*
+--[[
 net.Receive("slv_npctools_spawner_rectrack",function(len)
 	local ent = net.ReadEntity()
 	if(!ent:IsValid()) then return end
@@ -48,4 +48,4 @@ net.Receive("slv_npc_soundtrack",function(len)
 	if(!ent:IsValid()) then return end
 
 end)
-*/
+]]

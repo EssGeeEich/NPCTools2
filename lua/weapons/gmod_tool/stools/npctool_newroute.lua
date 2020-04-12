@@ -147,7 +147,7 @@ function TOOL.BuildCPanel(panel)
 	end
 	ToolData.SavePresetButton.DoClick = function()
 		CreateSaveDialog("NPC Route", function(name)
-			if string.Right(name,4) != ".txt" then
+			if string.Right(name,4) ~= ".txt" then
 				name = name..".txt"
 			end
 			local data = {}
@@ -289,7 +289,7 @@ function ComputeLoad(player)
 		buffer = buffer .. user_buffers[player].sectors[i]
 	end
 	local uncompressed = util.Decompress(buffer)
-	if !uncompressed then
+	if not uncompressed then
 		MsgN("Could not decompress route data!")
 		return
 	end

@@ -642,7 +642,7 @@ function ENT:Think()
 			end
 			
 			if v[3] == 0 then
-				if table.HasValue(idle,npc:GetActivity()) and (!npc.sm_investigating or npc.sm_investigating==0) then
+				if table.HasValue(idle,npc:GetActivity()) and (not npc.sm_investigating or npc.sm_investigating==0) then
 					-- Is idling. Start walking
 					Actions[link[2]][1](npc, targetPos)
 				end
@@ -670,7 +670,7 @@ function ENT:Think()
 		if DistanceCheck(currentPos, targetPos, npc:GetClass()) then
 			table.insert(markQueueRemoved,npc)
 			self:AddNPC(npc)
-		elseif table.HasValue(idle,npc:GetActivity()) and (!npc.sm_investigating or npc.sm_investigating==0) then
+		elseif table.HasValue(idle,npc:GetActivity()) and (not npc.sm_investigating or npc.sm_investigating==0) then
 			-- Start Running
 			Actions[1][1](npc, targetPos)
 		else

@@ -1,14 +1,19 @@
 
 AddCSLuaFile("cl_init.lua")
 AddCSLuaFile("shared.lua")
-include('shared.lua')
+
+include("shared.lua")
 
 numpad.Register("npctool_spawner_turnon",function(pl,ent,pID)
-	if(!ent:IsValid()) then return end
+	if not ent or not IsValid(ent) then
+		return
+	end
 	ent:SetEnabled(true)
 end)
 numpad.Register("npctool_spawner_turnoff",function(pl,ent,pID)
-	if(!ent:IsValid()) then return end
+	if not ent or not IsValid(ent) then
+		return
+	end
 	ent:SetEnabled(false)
 end)
 
@@ -41,6 +46,7 @@ AccessorFunc(ENT,"m_dHealth","ScrNPCHealth",FORCE_NUMBER)
 AccessorFunc(ENT,"m_dMaxHealth","ScrNPCMaxHealth",FORCE_NUMBER)
 
 function ENT:UpdateRelationship(targetEnt)
+	if not IsValid(npc) then return end
 	if targetEnt:IsNPC() then
 		local class = self:GetNPCClass()
 		local targetClass = targetEnt.ClassName or targetEnt:GetClass()
@@ -111,22 +117,22 @@ function ENT:Initialize()
 	numpad.OnDown(self.entOwner,self:GetKeyTurnOff(),"npctool_spawner_turnoff",self)
 	
 	self:SetEnabled(false)
-	self.m_nextSpawn = CurTime() +self:GetSpawnDelay()
-	self.m_tbNPCs = {}
-	self.m_tbPatrolPoints = self.m_tbPatrolPoints || {}
-	self.m_tbRelationships = self.m_tbRelationships || {}
+	self.m_nextSpawn = CurTime() + self:GetSpawnDelay()
+	self.m_tbNPCs = self.m_tbNPCs or {}
+	self.m_tbPatrolPoints = self.m_tbPatrolPoints or {}
+	self.m_tbRelationships = self.m_tbRelationships or {}
 	self.m_autoReverseRelationship = true
 	if self:GetStartOn() then self:SetEnabled(true) end
 	if(self.m_bShowEffects == nil) then self:ShowEffects(true) end
 	self.m_tbClients = {}
-	self.m_tbNPCData = self.m_tbNPCData || {}
+	self.m_tbNPCData = self.m_tbNPCData or {}
 	local idx = self:EntIndex()
 	hook.Add("OnPlayerChangedTeam","npcspawner_updaterelationships"..idx, function(ent)
-		if(!self:IsValid()) then hook.Remove("OnPlayerChangedTeam","npcspawner_updaterelationships"..idx)
+		if not self:IsValid() then hook.Remove("OnPlayerChangedTeam","npcspawner_updaterelationships"..idx)
 		elseif IsValid(ent) then self:UpdateRelationship(ent) end
 	end)
 	hook.Add("OnEntityCreated","npcspawner_updaterelationships" .. idx,function(ent)
-		if(!self:IsValid()) then hook.Remove("OnEntityCreated","npcspawner_updaterelationships" .. idx)
+		if not self:IsValid() then hook.Remove("OnEntityCreated","npcspawner_updaterelationships" .. idx)
 		elseif IsValid(ent) then self:UpdateRelationship(ent) end
 	end)
 end
@@ -135,7 +141,7 @@ function ENT:GetNPCData() return self.m_tbNPCData end
 
 function ENT:ShowEffects(b)
 	self.m_bShowEffects = b
-	if(!b) then
+	if not b then
 		if(IsValid(self.m_entEffect)) then self.m_entEffect:Remove() end
 		self.m_entEffect = nil
 		return
@@ -155,7 +161,7 @@ function ENT:ShowEffects(b)
 end
 
 function ENT:AddPatrolPoint(vec)
-	self.m_tbPatrolPoints = self.m_tbPatrolPoints || {}
+	self.m_tbPatrolPoints = self.m_tbPatrolPoints or {}
 	local ent = ents.Create("obj_patrolpoint")
 	ent:SetPos(vec)
 	ent:SetWalk(self:GetPatrolWalk())
@@ -164,8 +170,8 @@ function ENT:AddPatrolPoint(vec)
 	ent:Spawn()
 	ent:Activate()
 	local ptype = self:GetPatrolType()
-	if ptype == 3 && self.m_tbPatrolPoints[1] then ent:SetNextPatrolPoint(self.m_tbPatrolPoints[1])
-	elseif ptype == 2 && #self.m_tbPatrolPoints > 0 then ent:SetLastPatrolPoint(self.m_tbPatrolPoints[#self.m_tbPatrolPoints]) end
+	if ptype == 3 and self.m_tbPatrolPoints[1] then ent:SetNextPatrolPoint(self.m_tbPatrolPoints[1])
+	elseif ptype == 2 and #self.m_tbPatrolPoints > 0 then ent:SetLastPatrolPoint(self.m_tbPatrolPoints[#self.m_tbPatrolPoints]) end
 	if self.m_tbPatrolPoints[#self.m_tbPatrolPoints] then self.m_tbPatrolPoints[#self.m_tbPatrolPoints]:SetNextPatrolPoint(ent) end
 	table.insert(self.m_tbPatrolPoints, ent)
 	
@@ -190,8 +196,18 @@ function ENT:SpawnNPC()
 	
 	if self.m_obbMaxNPC then
 		-- Anything blocking the spawn?
-		for _,ent in ipairs(ents.FindInBox(self:LocalToWorld(self.m_obbMinNPC) +self:GetUp() *25,self:LocalToWorld(self.m_obbMaxNPC) +self:GetUp() *25)) do
-			if IsValid(ent) and (IsValid(ent:GetPhysicsObject()) or ent:IsNPC() or ent:IsPlayer()) and !ent:IsWeapon() then
+		local NearbyEntities = ents.FindInBox(
+			self:LocalToWorld(self.m_obbMinNPC) + self:GetUp() * 25,
+			self:LocalToWorld(self.m_obbMaxNPC) + self:GetUp() * 25
+		)
+		for _,ent in ipairs(NearbyEntities) do
+			if IsValid(ent) and (IsValid(ent:GetPhysicsObject()) or ent:IsNPC() or ent:IsPlayer()) and (not ent:IsWeapon()) then
+				--[[
+					if ent:IsPlayer() then
+					elseif ent:IsNPC() then
+					else
+					end
+				]]
 				return
 			end
 		end
@@ -221,7 +237,7 @@ function ENT:SpawnNPC()
 	local spawnflags = self:GetNPCSpawnflags()
 	local burrowed = self:GetNPCBurrowed()
 	local data = self:GetNPCData()
-	local flags = spawnflags || 0
+	local flags = spawnflags or 0
 	local keyvalues = self:GetNPCKeyValues()
 	local squad = self:GetSquad()
 	local proficiency = self:GetNPCProficiency()
@@ -276,7 +292,7 @@ function ENT:SpawnNPC()
 	
 	if proficiency == 5 then
 		npc:SetCurrentWeaponProficiency(math.random(0,4))
-	elseif proficiency != 6 then
+	elseif proficiency ~= 6 then
 		npc:SetCurrentWeaponProficiency(proficiency)
 	end
 	
@@ -349,14 +365,14 @@ hook.Add("CreateEntityRagdoll","obj_npcspawner_fadetime",function(src,dst)
 end)
 
 function ENT:SetDisposition(class,disp)
-	self.m_tbRelationships = self.m_tbRelationships || {}
+	self.m_tbRelationships = self.m_tbRelationships or {}
 	self.m_tbRelationships[class:lower()] = disp
 end
 
 
 function ENT:Think()
-	if(IsValid(self.m_entEffect) && CurTime() > self.m_nextEffect) then self.m_entEffect:Fire("SetSequence","teleport",0); self.m_nextEffect = CurTime() +8 end
-	if(!self:GetEnabled()) then return end
+	if(IsValid(self.m_entEffect) and CurTime() > self.m_nextEffect) then self.m_entEffect:Fire("SetSequence","teleport",0); self.m_nextEffect = CurTime() +8 end
+	if(not self:GetEnabled()) then return end
 	if(CurTime() >= self.m_nextSpawn) then
 		self.m_nextSpawn = CurTime() + self:GetSpawnDelay()
 		self:SpawnNPC()
@@ -374,10 +390,10 @@ local hook = (hook.GetTable()["OnNPCKilled"] or {})["manolis:MVLevels:OnNPCKille
 if hook then
 	hook.Add("OnNPCKilled","manolis:MVLevels:OnNPCKilledBC",function(npc,killer,weapon)
 		if(LevelSystemConfiguration.NPCXP) then
-			if(npc != killer) then // Not a suicide? Somehow.
-				if(killer:IsPlayer()) then
+			if(npc ~= killer) then -- Not a suicide? Somehow.
+				if killer:IsPlayer() and killer.addXP then
 					local XP = killer:addXP(npc:GetVar("GiveXP") or LevelSystemConfiguration.NPCXPAmount, true)
-					if(XP) then
+					if XP and DarkRP then
 						DarkRP.notify(killer, 0,4,'You got '..XP..'XP for killing an NPC.')
 					end
 				end

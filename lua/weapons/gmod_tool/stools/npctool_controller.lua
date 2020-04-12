@@ -27,7 +27,7 @@ if(CLIENT) then
 	local tbSelected = {}
 	cvars.AddChangeCallback("npctool_controller_showcircle",function(cvar,prev,new)
 		if(tobool(new)) then
-			for _,ent in ipairs(tbSelected) do // TODO: Don't do this if tool isn't equipped
+			for _,ent in ipairs(tbSelected) do -- TODO: Don't do this if tool isn't equipped
 				if(ent:IsValid()) then
 					ent:StopParticles()
 					ParticleEffectAttach("plate_green",PATTACH_ABSORIGIN_FOLLOW,ent,0)
@@ -47,7 +47,7 @@ if(CLIENT) then
 	function TOOL:DrawHUD()
 		local tr = util.TraceLine(util.GetPlayerTrace(LocalPlayer()))
 		local mat
-		if(tr.Entity:IsValid() && (tr.Entity:IsNPC() || tr.Entity:IsPlayer())) then
+		if(tr.Entity:IsValid() and (tr.Entity:IsNPC() or tr.Entity:IsPlayer())) then
 			if(table.HasValue(tbSelected,tr.Entity)) then return end
 			mat = matAttack
 		else mat = matMove end
@@ -58,9 +58,9 @@ if(CLIENT) then
 	
 	net.Receive("npctool_contr_add",function(len)
 		local ent = net.ReadEntity()
-		if(!ent:IsValid()) then return end
+		if not IsValid(ent) then return end
 		local bSelected = net.ReadUInt(1) == 1
-		if(!bSelected) then
+		if not bSelected then
 			ent:StopParticles()
 			for _,entTgt in ipairs(tbSelected) do
 				if(entTgt == ent) then
@@ -70,7 +70,7 @@ if(CLIENT) then
 			end
 		else
 			table.insert(tbSelected,ent)
-			if(GetConVarNumber("npctool_controller_showcircle") != 0) then ParticleEffectAttach("plate_green",PATTACH_ABSORIGIN_FOLLOW,ent,0) end
+			if(GetConVarNumber("npctool_controller_showcircle") ~= 0) then ParticleEffectAttach("plate_green",PATTACH_ABSORIGIN_FOLLOW,ent,0) end
 		end
 	end)
 	
@@ -106,7 +106,7 @@ else
 		for entTgt,disp in pairs(self.m_tbDisp[ent]) do
 			if(entTgt:IsValid()) then
 				ent:AddEntityRelationship(entTgt,disp,100)
-				if(self.m_tbDisp[entTgt] && self.m_tbDisp[entTgt][ent] && !entTgt.m_bControlled) then
+				if(self.m_tbDisp[entTgt] and self.m_tbDisp[entTgt][ent] and not entTgt.m_bControlled) then
 					entTgt:AddEntityRelationship(ent,self.m_tbDisp[entTgt][ent],100)
 					self.m_tbDisp[entTgt][ent] = nil
 				elseif(entTgt:IsNPC()) then entTgt:AddEntityRelationship(ent,disp,100) end
@@ -120,15 +120,15 @@ else
 		net.Send(self:GetOwner())
 	end
 	function TOOL:StartControl(ent)
-		self.m_tbDisp = self.m_tbDisp || {}
+		self.m_tbDisp = self.m_tbDisp or {}
 		self.m_tbDisp[ent] = {}
 		ent.m_bControlled = true
 		for _,entTgt in ipairs(ents.GetAll()) do
-			if(entTgt:IsNPC() || entTgt:IsPlayer()) then
+			if(entTgt:IsNPC() or entTgt:IsPlayer()) then
 				self.m_tbDisp[ent][entTgt] = ent:Disposition(entTgt)
 				ent:AddEntityRelationship(entTgt,D_LI,100)
 				if(entTgt:IsNPC()) then
-					self.m_tbDisp[entTgt] = self.m_tbDisp[entTgt] || {}
+					self.m_tbDisp[entTgt] = self.m_tbDisp[entTgt] or {}
 					self.m_tbDisp[entTgt][ent] = entTgt:Disposition(ent)
 					entTgt:AddEntityRelationship(ent,D_LI,100)
 				end
@@ -143,9 +143,9 @@ else
 end
 
 function TOOL:LeftClick(tr)
-	if(!tr.Entity:IsValid() || !tr.Entity:IsNPC()) then return false end
+	if(not tr.Entity:IsValid() or not tr.Entity:IsNPC()) then return false end
 	if(CLIENT) then return true end
-	self.m_tbNPCs = self.m_tbNPCs || {}
+	self.m_tbNPCs = self.m_tbNPCs or {}
 	if(table.HasValue(self.m_tbNPCs,tr.Entity)) then
 		local l = "notification.AddLegacy(language.GetPhrase(\"#" .. tr.Entity:GetClass() .. "\") .. \" deselected.\",0,8);"
 		l = l .. "surface.PlaySound(\"buttons/button14.wav\")"
@@ -157,7 +157,7 @@ function TOOL:LeftClick(tr)
 		l = l .. "surface.PlaySound(\"buttons/button10.wav\")"
 		self:GetOwner():SendLua(l)
 		return false
-	elseif(tr.Entity.IsPossessed && tr.Entity:IsPossessed()) then
+	elseif(tr.Entity.IsPossessed and tr.Entity:IsPossessed()) then
 		local l = "notification.AddLegacy(\"This NPC is already being possessed by someone.\",1,8);"
 		l = l .. "surface.PlaySound(\"buttons/button10.wav\")"
 		self:GetOwner():SendLua(l)
@@ -172,19 +172,19 @@ end
 
 function TOOL:RightClick(tr)
 	if(CLIENT) then return false end
-	self.m_tbNPCs = self.m_tbNPCs || {}
+	self.m_tbNPCs = self.m_tbNPCs or {}
 	for i = #self.m_tbNPCs,1,-1 do
-		if(!self.m_tbNPCs[i]:IsValid()) then
+		if not IsValid(self.m_tbNPCs[i]) then
 			table.remove(self.m_tbNPCs,i)
 		end
 	end
-	if(!self.m_tbNPCs[1]) then
+	if not self.m_tbNPCs[1] then
 		local l = "notification.AddLegacy(\"No npcs selected.\",1,8);"
 		l = l .. "surface.PlaySound(\"buttons/button10.wav\")"
 		self:GetOwner():SendLua(l)
 		return false
 	end
-	if(tr.Entity:IsValid() && (tr.Entity:IsNPC() || tr.Entity:IsPlayer())) then
+	if(tr.Entity:IsValid() and (tr.Entity:IsNPC() or tr.Entity:IsPlayer())) then
 		for _,ent in ipairs(self.m_tbNPCs) do
 			ent:AddEntityRelationship(tr.Entity,D_HT,100)
 			ent:SetEnemy(tr.Entity)

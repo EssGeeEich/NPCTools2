@@ -22,7 +22,7 @@ end
 
 function TOOL:LeftClick(tr)
 	if(CLIENT) then return true end
-	if(tr.Entity:IsValid() && tr.Entity:IsNPC()) then
+	if(tr.Entity:IsValid() and tr.Entity:IsNPC()) then
 		local ent = ents.Create("obj_viewcam")
 		ent:SetEntityOwner(self:GetOwner())
 		ent:SetTarget(tr.Entity)

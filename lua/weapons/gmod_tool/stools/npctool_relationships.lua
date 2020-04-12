@@ -42,9 +42,9 @@ if(CLIENT) then
 	local tbSelected = {}
 	net.Receive("npctool_rel_add",function(len)
 		local ent = net.ReadEntity()
-		if(!ent:IsValid()) then return end
+		if(not ent:IsValid()) then return end
 		local bSelected = net.ReadUInt(1) == 1
-		if(!bSelected) then
+		if(not bSelected) then
 			ent:StopParticles()
 			for _,entTgt in ipairs(tbSelected) do
 				if(entTgt == ent) then
@@ -60,15 +60,15 @@ if(CLIENT) then
 	net.Receive("npctool_rel_set",function(len)
 		local bMultiple = net.ReadUInt(1) == 1
 		local src
-		if(!bMultiple) then
+		if(not bMultiple) then
 			src = net.ReadEntity()
-			if(!src:IsValid()) then return end
+			if(not src:IsValid()) then return end
 		end
 		local tgt = net.ReadEntity()
-		if(!tgt:IsValid()) then return end
+		if(not tgt:IsValid()) then return end
 		surface.PlaySound("buttons/button14.wav")
 		local nameSrc
-		if(!bMultiple) then nameSrc = language.GetPhrase("#" .. src:GetClass())
+		if(not bMultiple) then nameSrc = language.GetPhrase("#" .. src:GetClass())
 		else nameSrc = "Source NPCs" end
 		local nameTgt
 		if(tgt:IsPlayer()) then nameTgt = tgt:GetName()
@@ -82,7 +82,7 @@ if(CLIENT) then
 		elseif(disp == D_LI) then disp = "Like"
 		else disp = "Neutral" end
 		notification.AddLegacy("Set disposition from " .. nameSrc .. " to " .. nameTgt .. " to '" .. disp .. "'.",0,8)
-		if(bRevert && !tgt:IsPlayer()) then notification.AddLegacy("Set disposition from " .. nameTgt .. " to " .. nameSrc .. " to '" .. disp .. "'.",0,8) end
+		if(bRevert and not tgt:IsPlayer()) then notification.AddLegacy("Set disposition from " .. nameTgt .. " to " .. nameSrc .. " to '" .. disp .. "'.",0,8) end
 	end)
 	net.Receive("npctool_relationships_deploy",function(len)
 		for _,ent in ipairs(tbSelected) do
@@ -110,21 +110,21 @@ else
 		local revert = self:GetClientNumber("revert")
 		for _,src in ipairs(self.m_tbSelected) do
 			src:AddEntityRelationship(ent,disp,100)
-			if(revert != 0 && ent:IsNPC()) then
+			if(revert ~= 0 and ent:IsNPC()) then
 				ent:AddEntityRelationship(src,disp,100)
 			end
 		end
 		local num = #self.m_tbSelected
 		net.Start("npctool_rel_set")
-			net.WriteUInt(num > 1 && 1 || 0,1)
+			net.WriteUInt(num > 1 and 1 or 0,1)
 			if(num == 1) then net.WriteEntity(self.m_tbSelected[1]) end
 			net.WriteEntity(ent)
 		net.Send(self:GetOwner())
 	end
 	function TOOL:CheckSource()
-		if(!self.m_tbSelected) then return false end
+		if(not self.m_tbSelected) then return false end
 		for i = #self.m_tbSelected,1,-1 do
-			if(!self.m_tbSelected[i]:IsValid()) then
+			if(not self.m_tbSelected[i]:IsValid()) then
 				table.remove(self.m_tbSelected,i)
 			end
 		end
@@ -139,9 +139,9 @@ else
 end
 
 function TOOL:LeftClick(tr)
-	if(tr.Entity:IsValid() && tr.Entity:IsNPC()) then
+	if(tr.Entity:IsValid() and tr.Entity:IsNPC()) then
 		if(CLIENT) then return true end
-		self.m_tbSelected = self.m_tbSelected || {}
+		self.m_tbSelected = self.m_tbSelected or {}
 		net.Start("npctool_rel_add")
 		net.WriteEntity(tr.Entity)
 		for _,ent in ipairs(self.m_tbSelected) do
@@ -163,16 +163,16 @@ function TOOL:LeftClick(tr)
 end
 
 function TOOL:RightClick(tr)
-	if(!tr.Entity:IsValid() || (!tr.Entity:IsNPC() && !tr.Entity:IsPlayer())) then return false end
+	if(not tr.Entity:IsValid() or (not tr.Entity:IsNPC() and not tr.Entity:IsPlayer())) then return false end
 	if(CLIENT) then return true end
-	if(!self:CheckSource()) then return false end
+	if(not self:CheckSource()) then return false end
 	self:ApplyDisposition(tr.Entity)
 	return true
 end
 
 function TOOL:Reload(tr)
 	if(CLIENT) then return true end
-	if(!self:CheckSource()) then return false end
+	if(not self:CheckSource()) then return false end
 	self:ApplyDisposition(self:GetOwner())
 end
 
