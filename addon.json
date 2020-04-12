@@ -6,6 +6,7 @@
 	[
 		".git*",
 		"LICENSE",
-		"*.gma"
+		"*.gma",
+		"*.sh"
 	]
 }
