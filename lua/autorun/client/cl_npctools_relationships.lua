@@ -14,7 +14,7 @@ local UpdateMenu
 local function AddRelationship(src,tgt,disp)
 	src = string.lower(src)
 	tgt = string.lower(tgt)
-	tRelationships[src] = tRelationships[src] || {}
+	tRelationships[src] = tRelationships[src] or {}
 	tRelationships[src][tgt] = disp
 	net.Start("npctool_relman_add")
 		net.WriteString(src)
@@ -33,22 +33,23 @@ end
 local function GetSelected()
 	local sel = cvSel:GetString()
 	local vals = string.Explode(":",sel)
-	if(!vals[1] || !vals[2]) then return end
-	return vals[1],vals[2]
+	if vals[1] and vals[2] then
+		return vals[1], vals[2]
+	end
 end
 
 cvars.AddChangeCallback("npctool_relman_enabled",function(cv,prev,new)
 	net.Start("npctool_relman_en")
-		net.WriteUInt(tonumber(new) != 0 && 1 || 0,1)
+		net.WriteUInt(tonumber(new) ~= 0 and 1 or 0,1)
 	net.SendToServer()
 end)
 
 concommand.Add("npctool_relman_add",function(pl,cmd,args)
 	local src,tgt,disp = unpack(args)
-	disp = disp && tonumber(disp)
-	if(src && tgt && disp) then
+	disp = disp and tonumber(disp)
+	if(src and tgt and disp) then
 		AddRelationship(src,tgt,disp)
-		if(GetConVarNumber("npctool_relman_revert") != 0 && tgt != "player") then
+		if(GetConVarNumber("npctool_relman_revert") ~= 0 and tgt ~= "player") then
 			AddRelationship(tgt,src,disp)
 		end
 		UpdateMenu()
@@ -150,7 +151,7 @@ concommand.Add("npctool_relman_add",function(pl,cmd,args)
 	b:SetPos(30,135)
 	b.DoClick = function(b)
 		p:Close()
-		if(source && target && disp) then
+		if(source and target and disp) then
 			RunConsoleCommand("npctool_relman_add",source,target,disp)
 		end
 	end
@@ -166,7 +167,7 @@ end)
 
 concommand.Add("npctool_relman_remove",function(pl,cmd,args)
 	local src,tgt = GetSelected()
-	if(!src) then return end
+	if(not src) then return end
 	RemoveRelationship(src,tgt)
 	UpdateMenu()
 end)
@@ -182,7 +183,7 @@ local function CreateSaveDialog(title,fcSave)
 	local w, h = 220,110
 	local x,y = ScrW() *0.5 -w *0.5,ScrH() *0.5 -h *0.5
 	local p = vgui.Create("DFrame")
-	p:SetSize(w,h) 
+	p:SetSize(w,h)
 	p:SetPos(x,y)
 	p:MakePopup()
 	p:ShowCloseButton(true)
@@ -202,7 +203,7 @@ local function CreateSaveDialog(title,fcSave)
 	bSave:SetPos(20,70)
 	bSave.DoClick = function(bSave)
 		p:Close()
-		if(teName:GetValue() != "") then fcSave(teName:GetValue()) end
+		if(teName:GetValue() ~= "") then fcSave(teName:GetValue()) end
 	end
 	
 	local bCancel = vgui.Create("DButton", p)
@@ -218,7 +219,7 @@ local preset
 local function LoadPreset(val)
 	preset = val
 	local content = file.Read("npcrelationships/" .. val .. ".txt","DATA")
-	if(!content) then return false end
+	if(not content) then return false end
 	tRelationships = util.JSONToTable(content)
 	net.Start("npctool_relman_up")
 		net.WriteUInt(table.Count(tRelationships),12)
@@ -290,7 +291,7 @@ UpdateMenu = function()
 	b:SizeToContents()
 	b.OnMousePressed = function(b)
 		CreateSaveDialog("NPC Relationships",function(name)
-			if(string.Right(name,4) != ".txt") then name = name .. ".txt" end
+			if(string.Right(name,4) ~= ".txt") then name = name .. ".txt" end
 			local data = tRelationships
 			file.CreateDir("npcrelationships")
 			file.Write("npcrelationships/" .. name,util.TableToJSON(data))
