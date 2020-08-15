@@ -386,8 +386,8 @@ function ENT:OnRemove()
 	hook.Remove("OnPlayerChangedTeam","npcspawner_updaterelationships" .. self:EntIndex())
 end
 
-local hook = (hook.GetTable()["OnNPCKilled"] or {})["manolis:MVLevels:OnNPCKilledBC"]
-if hook then
+local has_hook = (hook.GetTable()["OnNPCKilled"] or {})["manolis:MVLevels:OnNPCKilledBC"]
+if has_hook then
 	hook.Add("OnNPCKilled","manolis:MVLevels:OnNPCKilledBC",function(npc,killer,weapon)
 		if(LevelSystemConfiguration.NPCXP) then
 			if(npc ~= killer) then -- Not a suicide? Somehow.
