@@ -749,7 +749,9 @@ local function RequestSpawn(keyValues, relationships, spawnPos, ply, startEnt)
 	
 	NPCSpawner:SetStartOn(ToolData.server.conVars.starton)
 	NPCSpawner:SetDeleteOnRemove(ToolData.server.conVars.deleteonremove)
-	NPCSpawner:SetXP(ToolData.server.conVars.xp or 10)
+	if NPCSpawner.SetXP then
+		NPCSpawner:SetXP(ToolData.server.conVars.xp or 10)
+	end
 	NPCSpawner:SetStartEntity(startEnt)
 	NPCSpawner:SetFadeTime(ToolData.server.conVars.fadetime)
 	NPCSpawner:SetScrNPCHealth(ToolData.server.conVars.starthealth)
