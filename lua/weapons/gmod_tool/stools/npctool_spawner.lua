@@ -766,7 +766,9 @@ else
 		ent:SetPatrolRoute(patrolRoute)
 		ent:SetStrictMovement(tobool(patrolstrict))
 		ent:SetDeleteOnRemove(tobool(deleteonremove))
-		ent:SetXP(xp or 10)
+		if ent.SetXP then
+			ent:SetXP(xp or 10)
+		end
 		if(squad ~= "") then ent:SetSquad(squad) end
 		for _,p in ipairs(tbPatrolPoints) do
 			ent:AddPatrolPoint(p)
